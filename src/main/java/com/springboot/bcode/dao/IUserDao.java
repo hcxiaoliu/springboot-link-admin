@@ -15,6 +15,8 @@ public interface IUserDao {
 	List<UserInfo> findList(UserInfo user);
 
 	UserInfo select(String id);
+	
+	List<String> selectIdByDeptId(Integer[]  deptIds);
 
 	int insert(UserInfo user);
 

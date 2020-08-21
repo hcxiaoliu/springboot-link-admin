@@ -155,7 +155,7 @@ public class UserService implements IUserService {
 		user.setRoles(roles);
 		user.setMenus(PermissionAlgorithm.buildMenu(menus));
 		user.setPermissions(permissionList);
-		user.setDatascope(getDataScope(user));
+		user.setDatascopeType(getDataScopeType(user));
 		user.setDatascopes(getDataScopes(user));
 		GlobalUser.setUserInfo(user);
 		return user;
@@ -169,7 +169,7 @@ public class UserService implements IUserService {
 	 * @return Integer 返回类型
 	 *
 	 */
-	private Integer getDataScope(UserInfo user) {
+	private Integer getDataScopeType(UserInfo user) {
 		Integer datascope = DataScopeType.self;
 		for (Role role : user.getRoles()) {
 			if (role.getData_scope() < datascope) {
@@ -187,29 +187,36 @@ public class UserService implements IUserService {
 	 * @return List<Integer> 返回类型
 	 *
 	 */
-	private List<Integer> getDataScopes(UserInfo user) {
-		List<Integer> dataScopeList = new ArrayList<Integer>();
-		List<Department> allDeptList = JSONArray.parseArray(RedisUtils
-				.getRedis().get(AppContext.Department_Key), Department.class);
+	private List<String> getDataScopes(UserInfo user) {
+		List<String> dataScopeList = new ArrayList<String>();
+
 		for (Role role : user.getRoles()) {
 			// 1全部数据权限
 			if (DataScopeType.all.equals(role.getData_scope())) {
-				for (Department dept : allDeptList) {
-					dataScopeList.add(dept.getId());
-				}
+
 				// 2用户自定义数据权限
 			} else if (DataScopeType.customize.equals(role.getData_scope())) {
-				dataScopeList.addAll(roleService.queryDataScope(role.getId()));
+				List<Integer> deptIds = roleService
+						.queryDataScope(role.getId());
+				dataScopeList.addAll(userDao.selectIdByDeptId(deptIds
+						.toArray(new Integer[deptIds.size()])));
 				// 3本部门及以下数据权限
 			} else if (DataScopeType.deptAndBelow.equals(role.getData_scope())) {
-				List<Department> findSelfAndAllChild = DepartmentAlgorithm
+				List<Department> allDeptList = JSONArray.parseArray(RedisUtils
+						.getRedis().get(AppContext.Department_Key),
+						Department.class);
+				List<Department> selfAndAllChildDepts = DepartmentAlgorithm
 						.findSelfAndAllChild(user.getDeptid(), allDeptList);
-				for (Department dept : findSelfAndAllChild) {
-					dataScopeList.add(dept.getId());
+				List<Integer> deptIds = new ArrayList<Integer>();
+				for (Department dept : selfAndAllChildDepts) {
+					deptIds.add(dept.getId());
 				}
+				dataScopeList.addAll(userDao.selectIdByDeptId(deptIds
+						.toArray(new Integer[deptIds.size()])));
 				// 4本部门数据权限
 			} else if (DataScopeType.dept.equals(role.getData_scope())) {
-				dataScopeList.add(user.getDeptid());
+				dataScopeList.addAll(userDao
+						.selectIdByDeptId(new Integer[] { user.getDeptid() }));
 			}
 		}
 		if (dataScopeList.isEmpty()) {
@@ -217,14 +224,15 @@ public class UserService implements IUserService {
 			return null;
 		}
 		// 去重复
-		Set<Integer> ownedSet = new HashSet<Integer>();
-		for (Integer id : dataScopeList) {
+		Set<String> ownedSet = new HashSet<String>();
+		for (String id : dataScopeList) {
 			ownedSet.add(id);
 		}
-		dataScopeList = new ArrayList<Integer>(ownedSet);
+		dataScopeList = new ArrayList<String>(ownedSet);
 
 		return dataScopeList;
 	}
+
 
 	@Override
 	public void modifyPwd(ModifyPwdVO vo) {

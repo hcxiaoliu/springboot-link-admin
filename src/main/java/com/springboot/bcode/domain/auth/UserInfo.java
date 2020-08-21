@@ -48,9 +48,9 @@ public class UserInfo extends JqGridParam {
 	private List<Permission> permissions;
 
 	// 数据权限范围（1：全部数据权限 2：自定数据权限 3：本部门及以下数据权限4：本部门数据权限 5：本人）
-	private Integer datascope;
-	// 户拥有的数据权限
-	private List<Integer> datascopes;
+	private Integer datascopeType;
+	// 户拥有的数据权限[用户id]
+	private List<String> datascopes;
 
 	public String getPassword() {
 		return password;
@@ -106,14 +106,6 @@ public class UserInfo extends JqGridParam {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public List<Integer> getDatascopes() {
-		return datascopes;
-	}
-
-	public void setDatascopes(List<Integer> datascopes) {
-		this.datascopes = datascopes;
 	}
 
 	public Integer getDeptid() {
@@ -204,14 +196,6 @@ public class UserInfo extends JqGridParam {
 		this.jobName = jobName;
 	}
 
-	public Integer getDatascope() {
-		return datascope;
-	}
-
-	public void setDatascope(Integer datascope) {
-		this.datascope = datascope;
-	}
-
 	public Integer getCompanyId() {
 		return companyId;
 	}
@@ -226,6 +210,22 @@ public class UserInfo extends JqGridParam {
 
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
+	}
+
+	public Integer getDatascopeType() {
+		return datascopeType;
+	}
+
+	public void setDatascopeType(Integer datascopeType) {
+		this.datascopeType = datascopeType;
+	}
+
+	public List<String> getDatascopes() {
+		return datascopes;
+	}
+
+	public void setDatascopes(List<String> datascopes) {
+		this.datascopes = datascopes;
 	}
 
 }

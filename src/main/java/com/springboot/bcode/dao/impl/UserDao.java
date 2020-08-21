@@ -133,8 +133,16 @@ public class UserDao extends BaseDaoImpl implements IUserDao {
 	public int updateState(String uid, int state) {
 		StringBuilder sql = new StringBuilder();
 		sql.append("update t_sys_user set state=? where uid=?");
-		return super.insertOrUpdateOrDelete(sql.toString(), new Object[] { state,
-				uid });
+		return super.insertOrUpdateOrDelete(sql.toString(), new Object[] {
+				state, uid });
+	}
+
+	@Override
+	public List<String> selectIdByDeptId(Integer[] deptIds) {
+		String sql = "select uid from t_sys_user where deptid in ("
+				+ StringUtils.join(deptIds, ",") + ")";
+		return super.getJdbcTemplate().queryForList(sql.toString(),
+				String.class);
 	}
 
 }
